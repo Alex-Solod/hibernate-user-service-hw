@@ -94,8 +94,32 @@ public class Injector {
     private Object createInstance(Class<?> clazz) {
         Object newInstance;
         try {
-            Constructor<?> classConstructor = clazz.getConstructor();
-            newInstance = classConstructor.newInstance();
+            // First try to find a constructor with @Inject annotation
+            Constructor<?>[] constructors = clazz.getConstructors();
+            Constructor<?> injectConstructor = null;
+            
+            for (Constructor<?> constructor : constructors) {
+                if (constructor.isAnnotationPresent(Inject.class)) {
+                    injectConstructor = constructor;
+                    break;
+                }
+            }
+            
+            if (injectConstructor != null) {
+                // Use constructor injection
+                Class<?>[] paramTypes = injectConstructor.getParameterTypes();
+                Object[] params = new Object[paramTypes.length];
+                
+                for (int i = 0; i < paramTypes.length; i++) {
+                    params[i] = getInstance(paramTypes[i]);
+                }
+                
+                newInstance = injectConstructor.newInstance(params);
+            } else {
+                // Fall back to no-arg constructor
+                Constructor<?> classConstructor = clazz.getConstructor();
+                newInstance = classConstructor.newInstance();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Can't create object of the class", e);
         }
