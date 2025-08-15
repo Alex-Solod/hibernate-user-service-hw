@@ -21,13 +21,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User register(String email, String password) throws RegistrationException {
+        if (email == null || email.trim().isEmpty()) {
+            throw new RegistrationException("Email cannot be null or empty");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new RegistrationException("Password cannot be null or empty");
+        }
         if (userService.findByEmail(email).isPresent()) {
             throw new RegistrationException("User with email " + email + " already exists");
         }
-        byte[] salt = PasswordUtil.getSalt();
+        String salt = PasswordUtil.getSalt();
         String hashPassword = PasswordUtil.hashPassword(password, salt);
         User user = new User();
-        user.setEmail(email);
+        user.setEmail(email.trim());
         user.setSalt(salt);
         user.setPassword(hashPassword);
         return userService.add(user);
@@ -35,12 +41,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User login(String email, String password) throws AuthenticationException {
-        Optional<User> userFromDbOptional = userService.findByEmail(email);
+        if (email == null || email.trim().isEmpty()) {
+            throw new AuthenticationException("Email cannot be null or empty");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new AuthenticationException("Password cannot be null or empty");
+        }
+        Optional<User> userFromDbOptional = userService.findByEmail(email.trim());
         if (userFromDbOptional.isPresent()) {
             User user = userFromDbOptional.get();
             String hashPassword = PasswordUtil.hashPassword(password, user.getSalt());
             if (user.getPassword().equals(hashPassword)) {
-                return user; // ← исправлено
+                return user;
             }
         }
         throw new AuthenticationException("Can't authenticate User with email " + email);

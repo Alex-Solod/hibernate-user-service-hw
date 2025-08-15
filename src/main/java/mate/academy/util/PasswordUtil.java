@@ -3,6 +3,7 @@ package mate.academy.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 public class PasswordUtil {
     private static final String CRYPTO_ALGORITHM = "SHA-256";
@@ -10,26 +11,25 @@ public class PasswordUtil {
     private PasswordUtil() {
     }
 
-    public static byte[] getSalt() {
-        // сгенерировать случайную строку/байты (String)
+    public static String getSalt() {
         SecureRandom secureRandom = new SecureRandom();
         byte[] salt = new byte[15];
         secureRandom.nextBytes(salt);
-        return salt;
+        return Base64.getEncoder().encodeToString(salt);
     }
 
-    public static String hashPassword(String password, byte[] salt) {
-        // SHA-256(salt + password)
+    public static String hashPassword(String password, String salt) {
         StringBuilder hashPassword = new StringBuilder();
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(CRYPTO_ALGORITHM);
-            messageDigest.update(salt);
+            byte[] saltBytes = Base64.getDecoder().decode(salt);
+            messageDigest.update(saltBytes);
             byte[] digest = messageDigest.digest(password.getBytes());
             for (byte d : digest) {
                 hashPassword.append(String.format("%02x", d));
             }
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Could not create hash using SHA-512 algorithm", e);
+            throw new RuntimeException("Could not create hash using SHA-256 algorithm", e);
         }
         return hashPassword.toString();
     }
