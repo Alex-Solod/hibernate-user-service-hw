@@ -5,7 +5,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.Arrays;
 
 @Entity
 @Table(name = "user")
@@ -48,9 +47,6 @@ public class User {
     @Override
     public String toString() {
         return "User{"
-                + "email='" + email + '\''
-                + ", password='" + password + '\''
-                + ", salt=" + Arrays.toString(salt)
-                + '}';
+                + "email='" + email + '\'' + '}';
     }
 }
